@@ -1,5 +1,5 @@
 const std = @import("std");
-const lib = @import("image_motemenizer");
+const im = @import("image_motemenizer");
 
 fn printUsage() !void {
     const stderr: std.fs.File = .stderr();
@@ -36,7 +36,7 @@ pub fn main() !void {
     const blocks_width = try std.fmt.parseInt(usize, args[3], 10);
     const blocks_height = try std.fmt.parseInt(usize, args[4], 10);
 
-    var color_space: lib.ColorSpace = .Rgb;
+    var color_space: im.ColorSpace = .Rgb;
     if (args.len >= 6) {
         if (std.mem.eql(u8, args[5], "rgb")) {
             color_space = .Rgb;
@@ -54,7 +54,7 @@ pub fn main() !void {
     const input_path_z = try allocator.dupeZ(u8, input_path);
     defer allocator.free(input_path_z);
 
-    var img = lib.Image.load(allocator, input_path_z) catch |err| {
+    var img = im.Image.load(allocator, input_path_z) catch |err| {
         std.debug.print("Failed to load image: {any}\n", .{err});
         std.process.exit(1);
     };
@@ -67,7 +67,7 @@ pub fn main() !void {
         @tagName(color_space),
     });
 
-    const mosaic = lib.Mosaic.init(blocks_width, blocks_height, color_space);
+    const mosaic = im.Mosaic.init(blocks_width, blocks_height, color_space);
 
     var result = mosaic.apply(allocator, img) catch |err| {
         std.debug.print("Failed to apply mosaic: {any}\n", .{err});
