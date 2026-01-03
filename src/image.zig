@@ -68,6 +68,44 @@ pub const Image = struct {
         };
     }
 
+    pub fn loadFromMemory(allocator: std.mem.Allocator, buffer: []const u8) ImageError!Image {
+        var width: c_int = 0;
+        var height: c_int = 0;
+        var channels: c_int = 0;
+
+        // Force RGB format (3 channels) for consistent pixel data layout
+        const data_ptr = c.stbi_load_from_memory(
+            buffer.ptr,
+            @as(c_int, @intCast(buffer.len)),
+            &width,
+            &height,
+            &channels,
+            3,
+        );
+        if (data_ptr == null) {
+            return ImageError.LoadFailed;
+        }
+
+        const w = @as(usize, @intCast(width));
+        const h = @as(usize, @intCast(height));
+        const size = w * h * 3;
+
+        const data = allocator.alloc(u8, size) catch {
+            c.stbi_image_free(data_ptr);
+            return ImageError.OutOfMemory;
+        };
+
+        @memcpy(data, data_ptr[0..size]);
+        c.stbi_image_free(data_ptr);
+
+        return Image{
+            .width = w,
+            .height = h,
+            .data = data,
+            .allocator = allocator,
+        };
+    }
+
     pub fn save(self: Image, path: [:0]const u8) ImageError!void {
         const width = @as(c_int, @intCast(self.width));
         const height = @as(c_int, @intCast(self.height));
