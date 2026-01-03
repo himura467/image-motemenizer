@@ -13,6 +13,19 @@ pub const ImageError = error{
     UnsupportedFormat,
 };
 
+pub const ImageFormat = enum {
+    Png,
+    Jpg,
+    Bmp,
+
+    pub fn fromExtension(ext: []const u8) ?ImageFormat {
+        if (std.mem.eql(u8, ext, ".png")) return .Png;
+        if (std.mem.eql(u8, ext, ".jpg") or std.mem.eql(u8, ext, ".jpeg")) return .Jpg;
+        if (std.mem.eql(u8, ext, ".bmp")) return .Bmp;
+        return null;
+    }
+};
+
 pub const Image = struct {
     width: usize,
     height: usize,
@@ -111,15 +124,14 @@ pub const Image = struct {
         const height = @as(c_int, @intCast(self.height));
 
         const ext = std.fs.path.extension(path);
-        const result = if (std.mem.eql(u8, ext, ".png"))
-            c.stbi_write_png(path.ptr, width, height, 3, self.data.ptr, width * 3)
-        else if (std.mem.eql(u8, ext, ".jpg") or std.mem.eql(u8, ext, ".jpeg"))
+        const format = ImageFormat.fromExtension(ext) orelse return ImageError.UnsupportedFormat;
+
+        const result = switch (format) {
+            .Png => c.stbi_write_png(path.ptr, width, height, 3, self.data.ptr, width * 3),
             // Quality 90 (out of 100) provides good balance between file size and image quality
-            c.stbi_write_jpg(path.ptr, width, height, 3, self.data.ptr, 90)
-        else if (std.mem.eql(u8, ext, ".bmp"))
-            c.stbi_write_bmp(path.ptr, width, height, 3, self.data.ptr)
-        else
-            return ImageError.UnsupportedFormat;
+            .Jpg => c.stbi_write_jpg(path.ptr, width, height, 3, self.data.ptr, 90),
+            .Bmp => c.stbi_write_bmp(path.ptr, width, height, 3, self.data.ptr),
+        };
 
         if (result == 0) {
             return ImageError.WriteFailed;
