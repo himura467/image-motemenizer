@@ -138,6 +138,65 @@ pub const Image = struct {
         }
     }
 
+    const WriteContext = struct {
+        allocator: std.mem.Allocator,
+        buffer: std.ArrayListUnmanaged(u8),
+    };
+
+    fn write(context: ?*anyopaque, data: ?*anyopaque, size: c_int) callconv(.c) void {
+        const ctx: *WriteContext = @ptrCast(@alignCast(context));
+        const bytes: [*]const u8 = @ptrCast(data);
+        const len = @as(usize, @intCast(size));
+        ctx.buffer.appendSlice(ctx.allocator, bytes[0..len]) catch return;
+    }
+
+    pub fn writeToMemory(self: Image, allocator: std.mem.Allocator, format: ImageFormat) ImageError![]u8 {
+        const width = @as(c_int, @intCast(self.width));
+        const height = @as(c_int, @intCast(self.height));
+
+        var ctx = WriteContext{
+            .allocator = allocator,
+            .buffer = .{},
+        };
+        defer ctx.buffer.deinit(allocator);
+
+        const result = switch (format) {
+            .Png => c.stbi_write_png_to_func(
+                write,
+                &ctx,
+                width,
+                height,
+                3,
+                self.data.ptr,
+                width * 3,
+            ),
+            // Quality 90 (out of 100) provides good balance between file size and image quality
+            .Jpg => c.stbi_write_jpg_to_func(
+                write,
+                &ctx,
+                width,
+                height,
+                3,
+                self.data.ptr,
+                90,
+            ),
+            .Bmp => c.stbi_write_bmp_to_func(
+                write,
+                &ctx,
+                width,
+                height,
+                3,
+                self.data.ptr,
+            ),
+        };
+
+        if (result == 0) {
+            return ImageError.WriteFailed;
+        }
+
+        return ctx.buffer.toOwnedSlice(allocator) catch return ImageError.OutOfMemory;
+    }
+
     pub fn getPixel(self: Image, x: usize, y: usize) color.Rgb {
         const idx = (y * self.width + x) * 3;
         const rgb_u8 = color.RgbU8.init(self.data[idx], self.data[idx + 1], self.data[idx + 2]);
