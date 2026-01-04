@@ -55,7 +55,7 @@ export fn getDimensions(
     width: *u32,
     height: *u32,
 ) i32 {
-    const image = im.Image.loadFromMemory(allocator, input_ptr[0..input_len]) catch return -1;
+    var image = im.Image.loadFromMemory(allocator, input_ptr[0..input_len]) catch return -1;
     defer image.deinit();
 
     width.* = @intCast(image.width);
