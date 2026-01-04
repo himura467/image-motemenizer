@@ -108,6 +108,12 @@ pub fn oklabToRgb(oklab: Oklab) Rgb {
 pub const ColorSpace = enum {
     Rgb,
     Oklab,
+
+    pub fn fromStr(s: []const u8) ?ColorSpace {
+        if (std.mem.eql(u8, s, "rgb")) return .Rgb;
+        if (std.mem.eql(u8, s, "oklab")) return .Oklab;
+        return null;
+    }
 };
 
 test "RGB to Oklab conversion round-trip" {
