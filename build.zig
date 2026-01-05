@@ -41,7 +41,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
     });
 
-    // Add stb C implementation and headers
+    // Add stb C implementation
     mod.addCSourceFile(.{ .file = b.path("vendor/stb/stb.c") });
     mod.addIncludePath(b.path("vendor/stb"));
 
@@ -145,6 +145,24 @@ pub fn build(b: *std.Build) void {
     const test_step = b.step("test", "Run tests");
     test_step.dependOn(&run_mod_tests.step);
     test_step.dependOn(&run_exe_tests.step);
+
+    const wasm_target = b.resolveTargetQuery(.{
+        .cpu_arch = .wasm32,
+        .os_tag = .wasi,
+    });
+    const wasm_optimize = .ReleaseSmall;
+
+    const wasm = b.addExecutable(.{
+        .name = "image_motemenizer",
+        .root_module = b.createModule(.{ .root_source_file = b.path("src/wasm.zig"), .target = wasm_target, .optimize = wasm_optimize, .imports = &.{
+            .{ .name = "image_motemenizer", .module = mod },
+        } }),
+    });
+    wasm.wasi_exec_model = .reactor;
+    wasm.linkLibC();
+
+    const wasm_step = b.step("wasm", "Build WebAssembly module");
+    wasm_step.dependOn(&b.addInstallArtifact(wasm, .{}).step);
 
     // Just like flags, top level steps are also listed in the `--help` menu.
     //
