@@ -3,12 +3,12 @@ const im = @import("image_motemenizer");
 
 var allocator = std.heap.wasm_allocator;
 
-export fn alloc(len: usize) ?[*]u8 {
+export fn wasmAlloc(len: usize) ?[*]u8 {
     const slice = allocator.alloc(u8, len) catch return null;
     return slice.ptr;
 }
 
-export fn free(ptr: [*]u8, len: usize) void {
+export fn wasmFree(ptr: [*]u8, len: usize) void {
     allocator.free(ptr[0..len]);
 }
 
