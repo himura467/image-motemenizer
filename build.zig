@@ -160,6 +160,7 @@ pub fn build(b: *std.Build) void {
     });
     wasm.wasi_exec_model = .reactor;
     wasm.linkLibC();
+    wasm.rdynamic = true;
 
     const wasm_step = b.step("wasm", "Build WebAssembly module");
     wasm_step.dependOn(&b.addInstallArtifact(wasm, .{}).step);
