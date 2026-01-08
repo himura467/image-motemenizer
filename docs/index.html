@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Image Motemenizer - Mosaic Effect Demo</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="https://github.com/himura467/image-motemenizer" target="_blank" class="github">
+                <svg viewBox="0 0 16 16" fill="currentColor" aria-label="GitHub">
+                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8"/>
+                </svg>
+            </a>
+            <h1>Image Motemenizer</h1>
+            <p class="subtitle">Apply mosaic effects to images using Zig WebAssembly</p>
+        </header>
+        <main>
+            <div class="upload" id="upload">
+                <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M13.5 3H12H8C6.34315 3 5 4.34315 5 6V18C5 19.6569 6.34315 21 8 21H12M13.5 3L19 8.625M13.5 3V7.625C13.5 8.17728 13.9477 8.625 14.5 8.625H19M19 8.625V11.8125" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M17.5 21L17.5 15M17.5 15L20 17.5M17.5 15L15 17.5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <p class="upload-text">Click to upload or drag and drop</p>
+                <p class="upload-hint">PNG, JPG, or BMP</p>
+                <input type="file" id="fileInput" accept="image/png,image/jpeg,image/jpg,image/bmp" hidden>
+            </div>
+            <div class="control" id="control" style="display: none;">
+                <div class="control-group">
+                    <label for="blocksWidthNumber">Horizontal Blocks:</label>
+                    <div class="input-group">
+                        <input type="number" id="blocksWidthNumber" min="1" max="256" value="32" step="1">
+                        <input type="range" id="blocksWidthRange" min="1" max="256" value="32" step="1">
+                    </div>
+                </div>
+                <div class="control-group">
+                    <label for="blocksHeightNumber">Vertical Blocks:</label>
+                    <div class="input-group">
+                        <input type="number" id="blocksHeightNumber" min="1" max="256" value="32" step="1">
+                        <input type="range" id="blocksHeightRange" min="1" max="256" value="32" step="1">
+                    </div>
+                </div>
+                <fieldset class="control-group">
+                    <legend>Color Space:</legend>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="colorSpace" value="rgb" checked>
+                            <span>RGB</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="colorSpace" value="oklab">
+                            <span>Oklab</span>
+                        </label>
+                    </div>
+                </fieldset>
+                <button class="apply" id="apply">Apply Mosaic Effect</button>
+            </div>
+            <div class="preview" id="preview" style="display: none;">
+                <div class="image-comparison">
+                    <div class="image-container">
+                        <h3>Original</h3>
+                        <img id="originalImage" alt="Original image">
+                    </div>
+                    <div class="image-container">
+                        <h3>Mosaic Effect</h3>
+                        <div class="processed-container">
+                            <img id="processedImage" alt="Processed image" style="display: none;">
+                            <div class="loading" id="loading" style="display: none;"></div>
+                        </div>
+                    </div>
+                </div>
+                <button class="download" id="download" style="display: none;">Download Result</button>
+            </div>
+            <div class="error-message" id="errorMessage" style="display: none;"></div>
+        </main>
+        <footer>
+            <p>&copy; 2026 Akito Shitara. All rights reserved.</p>
+        </footer>
+    </div>
+    <script src="index.js"></script>
+    <script src="wasm-binding.js"></script>
+</body>
+</html>
