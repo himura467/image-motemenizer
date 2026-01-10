@@ -6,7 +6,6 @@ const blocksWidthRange = document.getElementById('blocksWidthRange');
 const blocksHeightNumber = document.getElementById('blocksHeightNumber');
 const blocksHeightRange = document.getElementById('blocksHeightRange');
 const colorSpaces = document.getElementsByName('colorSpace');
-const apply = document.getElementById('apply');
 const preview = document.getElementById('preview');
 const originalImage = document.getElementById('originalImage');
 const processedImage = document.getElementById('processedImage');
@@ -56,21 +55,27 @@ fileInput.addEventListener('change', (e) => {
 
 blocksWidthNumber.addEventListener('input', (e) => {
     blocksWidthRange.value = e.target.value;
+    processImage();
 });
 
 blocksWidthRange.addEventListener('input', (e) => {
     blocksWidthNumber.value = e.target.value;
+    processImage();
 });
 
 blocksHeightNumber.addEventListener('input', (e) => {
     blocksHeightRange.value = e.target.value;
+    processImage();
 });
 
 blocksHeightRange.addEventListener('input', (e) => {
     blocksHeightNumber.value = e.target.value;
+    processImage();
 });
 
-apply.addEventListener('click', processImage);
+colorSpaces.forEach(radio => {
+    radio.addEventListener('change', processImage);
+});
 
 download.addEventListener('click', downloadResult);
 
@@ -94,6 +99,9 @@ async function handleFile(file) {
         download.style.display = 'none';
 
         hideError();
+
+        // Automatically process image
+        await processImage();
     } catch (error) {
         showError('Failed to load image: ' + error.message);
         console.error(error);
@@ -107,7 +115,6 @@ async function processImage() {
     }
 
     try {
-        apply.disabled = true;
         processedImage.style.display = 'none';
         loading.style.display = 'block';
         download.style.display = 'none';
@@ -137,7 +144,6 @@ async function processImage() {
         showError('Failed to process image: ' + error.message);
         console.error(error);
     } finally {
-        apply.disabled = false;
         loading.style.display = 'none';
     }
 }
