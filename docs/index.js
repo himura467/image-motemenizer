@@ -17,11 +17,9 @@ let image = null;
 
 async function init() {
     try {
-        showError('Loading WebAssembly module...');
         await window.wasmBinding.init();
         const version = window.wasmBinding.getVersion();
         console.log('Loaded image-motemenizer version: ', version);
-        hideError();
     } catch (error) {
         showError('Failed to load WebAssembly module. Please refresh the page.');
         console.error(error);
