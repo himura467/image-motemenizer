@@ -154,12 +154,11 @@ pub fn build(b: *std.Build) void {
 
     const wasm = b.addExecutable(.{
         .name = "image_motemenizer",
-        .root_module = b.createModule(.{ .root_source_file = b.path("src/wasm.zig"), .target = wasm_target, .optimize = wasm_optimize, .imports = &.{
+        .root_module = b.createModule(.{ .root_source_file = b.path("src/wasm.zig"), .target = wasm_target, .optimize = wasm_optimize, .link_libc = true, .imports = &.{
             .{ .name = "image_motemenizer", .module = mod },
         } }),
     });
     wasm.wasi_exec_model = .reactor;
-    wasm.linkLibC();
     wasm.rdynamic = true;
 
     const wasm_step = b.step("wasm", "Build WebAssembly module");

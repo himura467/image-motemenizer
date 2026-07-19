@@ -15,7 +15,7 @@ A Zig library for applying mosaic effects to images.
 
 ## Usage
 
-Requires Zig `0.15.2`.
+Requires Zig `0.16.0`.
 
 ### Command Line Interface
 

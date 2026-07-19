@@ -1,9 +1,8 @@
 const std = @import("std");
 const im = @import("image_motemenizer");
 
-fn printUsage() !void {
-    const stderr: std.fs.File = .stderr();
-    try stderr.writeAll(
+fn printUsage() void {
+    std.debug.print(
         \\Usage: image_motemenizer <input> <output> <blocks_width> <blocks_height> [color_space]
         \\
         \\Arguments:
@@ -16,18 +15,19 @@ fn printUsage() !void {
         \\Example:
         \\  image_motemenizer input.jpg output.png 32 32 oklab
         \\
-    );
+    , .{});
 }
 
-pub fn main() !void {
+pub fn main(init: std.process.Init.Minimal) !void {
     // Use C allocator since we're already linking libc for stb_image
     const allocator = std.heap.c_allocator;
 
-    const args = try std.process.argsAlloc(allocator);
-    defer std.process.argsFree(allocator, args);
+    var arena_state = std.heap.ArenaAllocator.init(allocator);
+    defer arena_state.deinit();
+    const args = try init.args.toSlice(arena_state.allocator());
 
     if (args.len < 5) {
-        try printUsage();
+        printUsage();
         std.process.exit(1);
     }
 

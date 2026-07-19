@@ -156,7 +156,7 @@ pub const Image = struct {
 
         var ctx = WriteContext{
             .allocator = allocator,
-            .buffer = .{},
+            .buffer = .empty,
         };
         defer ctx.buffer.deinit(allocator);
 
