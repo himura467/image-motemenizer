@@ -197,10 +197,13 @@ pub const Image = struct {
         return ctx.buffer.toOwnedSlice(allocator) catch return ImageError.OutOfMemory;
     }
 
-    pub fn getPixel(self: Image, x: usize, y: usize) color.Rgb {
+    pub fn getPixelU8(self: Image, x: usize, y: usize) color.RgbU8 {
         const idx = (y * self.width + x) * 3;
-        const rgb_u8 = color.RgbU8.init(self.data[idx], self.data[idx + 1], self.data[idx + 2]);
-        return rgb_u8.toRgb();
+        return color.RgbU8.init(self.data[idx], self.data[idx + 1], self.data[idx + 2]);
+    }
+
+    pub fn getPixel(self: Image, x: usize, y: usize) color.Rgb {
+        return self.getPixelU8(x, y).toRgb();
     }
 
     pub fn setPixel(self: *Image, x: usize, y: usize, rgb: color.Rgb) void {
