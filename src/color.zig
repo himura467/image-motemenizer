@@ -63,15 +63,20 @@ fn linearToRgb(c: f32) f32 {
     }
 }
 
-// https://bottosson.github.io/posts/oklab/#converting-from-linear-srgb-to-oklab
-pub fn rgbToOklab(rgb: Rgb) Oklab {
-    const lr = rgbToLinear(rgb.r);
-    const lg = rgbToLinear(rgb.g);
-    const lb = rgbToLinear(rgb.b);
+const rgb_to_linear_lut: [256]f32 = blk: {
+    @setEvalBranchQuota(1_000_000);
+    var lut: [256]f32 = undefined;
+    for (&lut, 0..) |*v, i| {
+        v.* = rgbToLinear(@as(f32, @floatFromInt(i)) / 255.0);
+    }
+    break :blk lut;
+};
 
-    const l = 0.4122214708 * lr + 0.5363325363 * lg + 0.0514459929 * lb;
-    const m = 0.2119034982 * lr + 0.6806995451 * lg + 0.1073969566 * lb;
-    const s = 0.0883024619 * lr + 0.2817188376 * lg + 0.6299787005 * lb;
+// https://bottosson.github.io/posts/oklab/#converting-from-linear-srgb-to-oklab
+fn linearToOklab(r: f32, g: f32, b: f32) Oklab {
+    const l = 0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b;
+    const m = 0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b;
+    const s = 0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b;
 
     const l_ = math.cbrt(l);
     const m_ = math.cbrt(m);
@@ -82,6 +87,18 @@ pub fn rgbToOklab(rgb: Rgb) Oklab {
         .a = 1.9779984951 * l_ - 2.4285922050 * m_ + 0.4505937099 * s_,
         .b = 0.0259040371 * l_ + 0.7827717662 * m_ - 0.8086757660 * s_,
     };
+}
+
+pub fn rgbToOklab(rgb: Rgb) Oklab {
+    return linearToOklab(rgbToLinear(rgb.r), rgbToLinear(rgb.g), rgbToLinear(rgb.b));
+}
+
+pub fn rgbU8ToOklab(rgb: RgbU8) Oklab {
+    return linearToOklab(
+        rgb_to_linear_lut[rgb.r],
+        rgb_to_linear_lut[rgb.g],
+        rgb_to_linear_lut[rgb.b],
+    );
 }
 
 // https://bottosson.github.io/posts/oklab/#converting-from-linear-srgb-to-oklab
@@ -125,4 +142,16 @@ test "RGB to Oklab conversion round-trip" {
     try std.testing.expect(@abs(back.r - original.r) < tolerance);
     try std.testing.expect(@abs(back.g - original.g) < tolerance);
     try std.testing.expect(@abs(back.b - original.b) < tolerance);
+}
+
+test "RgbU8 to Oklab matches Rgb to Oklab" {
+    const tolerance = 1e-4;
+    for (0..256) |i| {
+        const rgb = RgbU8.init(@intCast(i), @intCast(255 - i), @intCast(i / 2));
+        const expected = rgbToOklab(rgb.toRgb());
+        const actual = rgbU8ToOklab(rgb);
+        try std.testing.expect(@abs(actual.l - expected.l) < tolerance);
+        try std.testing.expect(@abs(actual.a - expected.a) < tolerance);
+        try std.testing.expect(@abs(actual.b - expected.b) < tolerance);
+    }
 }

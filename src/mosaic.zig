@@ -42,8 +42,7 @@ fn averageOklab(img: image.Image, x_start: usize, y_start: usize, x_end: usize, 
     while (y < y_end) : (y += 1) {
         var x = x_start;
         while (x < x_end) : (x += 1) {
-            const pixel = img.getPixel(x, y);
-            const oklab = color.rgbToOklab(pixel);
+            const oklab = color.rgbU8ToOklab(img.getPixelU8(x, y));
             sum_l += oklab.l;
             sum_a += oklab.a;
             sum_b += oklab.b;
